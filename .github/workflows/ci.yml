@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      - name: Build
+        run: dotnet build Glasspane.sln -c Release -nologo
+      - name: Publish the demo with NativeAOT
+        run: dotnet publish samples/GlassDemo/GlassDemo.csproj -c Release -r win-x64 -nologo -o artifacts/demo
+      - name: Check that the demo is a single native exe
+        shell: pwsh
+        run: |
+          $files = Get-ChildItem artifacts/demo -File | Where-Object { $_.Extension -in '.exe', '.dll' }
+          $files | ForEach-Object { "{0} {1:N0} bytes" -f $_.Name, $_.Length }
+          if ($files.Count -ne 1 -or $files[0].Name -ne 'GlassDemo.exe') { throw 'Expected only GlassDemo.exe.' }

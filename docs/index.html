@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Glasspane</title>
+<meta name="description" content="Native Windows glass UI over live video: frosted floating panels, Direct3D 11 + Direct2D, NativeAOT friendly.">
+<style>
+  :root {
+    --bg: #fbfbfd; --fg: #15181d; --muted: #5a6472; --line: #e3e6eb; --card: #ffffff; --accent: #3b6bff; --code: #f3f5f8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #0e1116; --fg: #eef1f5; --muted: #9aa5b4; --line: #232a34; --card: #141922; --accent: #7fa2ff; --code: #151b24; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
+  header { display: flex; align-items: center; justify-content: space-between; padding: 18px 0; }
+  header strong { font-size: 18px; letter-spacing: .2px; }
+  nav a { margin-left: 18px; color: var(--muted); font-size: 14px; }
+  .hero { padding: 36px 0 20px; text-align: center; }
+  .hero h1 { font-size: clamp(32px, 6vw, 54px); line-height: 1.1; margin: 0 0 14px; letter-spacing: -.5px; }
+  .hero p { color: var(--muted); max-width: 640px; margin: 0 auto 22px; font-size: 18px; }
+  .btn { display: inline-block; padding: 10px 18px; border-radius: 10px; border: 1px solid var(--line); color: var(--fg); background: var(--card); font-weight: 600; margin: 4px; }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .shot { margin: 26px auto 8px; border-radius: 14px; overflow: hidden; border: 1px solid var(--line); box-shadow: 0 18px 50px rgba(0,0,0,.18); }
+  .shot img { display: block; width: 100%; height: auto; }
+  figcaption { color: var(--muted); font-size: 13px; text-align: center; margin-top: 8px; }
+  section { padding: 34px 0; }
+  h2 { font-size: 26px; margin: 0 0 14px; letter-spacing: -.2px; }
+  .grid { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; }
+  .card h3 { margin: 0 0 6px; font-size: 16px; }
+  .card p { margin: 0; color: var(--muted); font-size: 14.5px; }
+  pre { background: var(--code); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; overflow-x: auto; font: 13.5px/1.55 ui-monospace, "Cascadia Mono", Consolas, monospace; }
+  code { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: .92em; }
+  table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+  th, td { text-align: left; padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; }
+  footer { padding: 28px 0 44px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--line); }
+  .zh { color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <strong>Glasspane</strong>
+    <nav><a href="#features">Features</a><a href="#start">Quick start</a><a href="#api">API</a><a href="https://github.com/KateY07/Glasspane">GitHub</a></nav>
+  </header>
+
+  <div class="hero">
+    <h1>Glass UI for apps<br>that are mostly picture</h1>
+    <p>A frosted-glass floating panel, an orb it collapses into, and a handful of controls, drawn over your live video in one Direct2D pass. Native Windows. NativeAOT friendly.</p>
+    <a class="btn primary" href="https://github.com/KateY07/Glasspane">View on GitHub</a>
+    <a class="btn" href="#start">Quick start</a>
+    <figure class="shot" style="margin-bottom:0"><img src="hero.png" alt="Glasspane demo: a frosted-glass control card over an animated frame" width="1400" height="891"></figure>
+    <figcaption>The demo app. The card blurs the live frame behind it; drag it, collapse it, click the orb to bring it back.</figcaption>
+  </div>
+
+  <section id="features">
+    <h2>What you get</h2>
+    <div class="grid">
+      <div class="card"><h3>Real frosted glass</h3><p>Direct2D blurs the frame behind the card and clips it to a rounded shape. Works for any shape and window size, and does not depend on DWM acrylic.</p></div>
+      <div class="card"><h3>Floating, collapsible panel</h3><p>Drag it anywhere. It collapses to an orb or a status pill with an animation, and can fold itself away when idle.</p></div>
+      <div class="card"><h3>One render pass</h3><p>A flip-model swap chain and one device context. Frames are uploaded, drawn letterboxed, overlaid, presented, and each new frame's GPU completion is confirmed.</p></div>
+      <div class="card"><h3>Small control set</h3><p>Buttons (plain, toggle, icon, danger), slider, dropdown, label, tooltips, and a vector icon set you can extend.</p></div>
+      <div class="card"><h3>NativeAOT ready</h3><p>No XAML, no reflection. The demo publishes to a single ~3 MB exe that needs no .NET runtime installed.</p></div>
+      <div class="card"><h3>Per-monitor DPI</h3><p>Crisp on mixed-DPI setups; native move/size, full screen and opt-in exclusion from screen capture.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Is it for you?</h2>
+    <table>
+      <tr><th>A good fit</th><th>Not a fit</th></tr>
+      <tr><td>Remote desktop, game streaming, screen sharing, capture tools, camera and monitoring viewers: the picture is the app and the controls float on it.</td>
+          <td>Forms, grids, rich text, accessibility trees, data binding. There is no layout engine; use WPF or WinUI for those.</td></tr>
+    </table>
+  </section>
+
+  <section id="start">
+    <h2>Quick start</h2>
+    <p>Requires Windows 10 or later and the .NET 10 SDK.</p>
+<pre><code>using Glasspane;
+
+UiThread.Initialize();
+using var window = new MyWindow();   // derive from UiWindow
+return UiThread.Run();</code></pre>
+<pre><code>sealed class MyWindow : UiWindow
+{
+    readonly object sceneGate = new();
+    readonly UiVideoView preview;
+    readonly MyPanel panel;               // derive from UiGlassPanel
+
+    public MyWindow()
+    {
+        CreateNative("My app", WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN, 0,
+                     unchecked((int)0x80000000), unchecked((int)0x80000000), 1100, 700);
+        panel = new MyPanel(sceneGate);
+        panel.Backdrop = (paint, rect, radius, _) => preview.DrawGlass(paint, rect, radius);
+        preview = new UiVideoView(this) { DrawOverlay = (paint, w, h) => panel.Draw(paint) };
+        preview.Start();
+        Show();
+    }
+
+    public void OnFrame(byte[] bgra, int width, int height) =>
+        preview.Submit(new VideoFrame(bgra, width, height, Pts: 0));
+}</code></pre>
+    <p>The complete, runnable version is <a href="https://github.com/KateY07/Glasspane/tree/main/samples/GlassDemo">samples/GlassDemo</a>, with pointer routing, idle auto-collapse and the collapse animation.</p>
+<pre><code>dotnet run -c Release --project samples/GlassDemo
+dotnet publish samples/GlassDemo -c Release -r win-x64     # NativeAOT single exe</code></pre>
+  </section>
+
+  <section id="api">
+    <h2>API at a glance</h2>
+    <table>
+      <tr><th>Type</th><th>Role</th></tr>
+      <tr><td><code>UiThread</code></td><td>The UI thread: message loop, <code>Post</code> work queue, <code>Error</code> event for exceptions in callbacks.</td></tr>
+      <tr><td><code>UiWindow</code></td><td>A native top-level window with decoded pointer, size and DPI events; full screen, topmost, capture exclusion.</td></tr>
+      <tr><td><code>UiVideoView</code></td><td>Frame upload, letterboxed drawing, overlay callback, <code>DrawGlass</code>, confirmed presentation.</td></tr>
+      <tr><td><code>UiBackdrop</code></td><td>Frosted glass for a window floating over the desktop: grabs what is behind it and blurs it.</td></tr>
+      <tr><td><code>UiGlassPanel</code></td><td>The draggable, collapsible card: geometry, animation, hit testing. You supply content and layout.</td></tr>
+      <tr><td><code>UiButton</code> <code>UiSlider</code> <code>UiChoice</code> <code>UiLabel</code></td><td>The controls. <code>UiTheme</code> holds the colours; <code>UiPaint.RegisterIcon</code> adds icons.</td></tr>
+      <tr><td><code>UiDevices</code> <code>UiSurface</code> <code>UiPaint</code> <code>UiText</code></td><td>The Direct3D/Direct2D/DirectWrite plumbing and drawing helpers, public so you can draw your own things.</td></tr>
+    </table>
+  </section>
+
+  <footer>
+    <p>Glasspane is MIT licensed and built on <a href="https://github.com/amerkoleci/Vortice.Windows">Vortice.Windows</a>. It is the UI layer of <a href="https://github.com/KateY07/frd">FRD</a>, extracted for reuse. The API is 0.x and may change before 1.0.</p>
+    <p class="zh">Glasspane 是面向 Windows 的原生毛玻璃 UI 库，适合“画面为主、控件悬浮其上”的应用，基于 Direct3D 11 + Direct2D，支持 NativeAOT。</p>
+  </footer>
+</div>
+</body>
+</html>
