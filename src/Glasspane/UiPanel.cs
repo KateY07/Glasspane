@@ -70,6 +70,7 @@ public abstract class UiGlassPanel
     /// <summary>Recomputes geometry for the current client size and state (not while animating).</summary>
     public void Layout(UiText text, int clientWidth, int clientHeight)
     {
+        layoutText = text;
         ClientWidth = clientWidth; ClientHeight = clientHeight;
         if (Animating) return;
         if (Collapsed) { CurrentRect = CollapsedRect(); CurrentRadius = CurrentRect.Height / 2; ContentOpacity = 0; OrbOpacity = 1; }
@@ -273,8 +274,12 @@ public abstract class UiGlassPanel
         if (Collapsed) OrbFraction = fraction; else PanelFraction = fraction;
         CurrentRect = new RectangleF(Margin + fraction.X * Math.Max(0, ClientWidth - size.X - Margin * 2),
             Margin + fraction.Y * Math.Max(0, ClientHeight - size.Y - Margin * 2), size.X, size.Y);
-        if (!Collapsed) pendingRelayout = true;
+        // The controls keep absolute positions, so they have to follow the card while it is dragged.
+        if (!Collapsed && !Animating && layoutText != null)
+            LayoutContent(layoutText, new RectangleF(CurrentRect.X + 5, CurrentRect.Y + 5, CurrentRect.Width - 10, CurrentRect.Height - 10));
     }
+
+    UiText? layoutText;
 
     protected bool pendingRelayout;
     public bool TakePendingRelayout() { var value = pendingRelayout; pendingRelayout = false; return value; }

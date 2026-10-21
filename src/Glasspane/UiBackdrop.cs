@@ -22,6 +22,13 @@ public sealed class UiBackdrop : IDisposable
     GaussianBlur? blur;
     RectangleF captured;       // DIP rectangle (client coordinates of the owning window) the bitmap represents
     bool valid;
+    RectangleF lastCard; Point lastOrigin; float lastScale; long lastGrab;
+
+    /// <summary>
+    /// While the card and the window stay where they are, the screen behind them is grabbed at most this often (milliseconds).
+    /// Grabbing the screen on every redraw makes the mouse pointer flicker on some systems; a moving card always grabs fresh pixels.
+    /// </summary>
+    public int StaticRefreshMilliseconds { get; set; } = 750;
 
     [DllImport("user32.dll")] static extern nint GetDC(nint hwnd);
     [DllImport("user32.dll")] static extern int ReleaseDC(nint hwnd, nint dc);
@@ -37,6 +44,9 @@ public sealed class UiBackdrop : IDisposable
     /// <summary>Grabs <paramref name="cardDip"/> (plus a blur margin) from the screen. <paramref name="origin"/> is the window's screen position in pixels.</summary>
     public void Capture(UiPaint paint, RectangleF cardDip, Point origin, float scale)
     {
+        var now = Environment.TickCount64;
+        if (valid && bitmap != null && cardDip == lastCard && origin == lastOrigin && scale == lastScale && now - lastGrab < StaticRefreshMilliseconds) return;
+        lastCard = cardDip; lastOrigin = origin; lastScale = scale; lastGrab = now;
         valid = false;
         var area = RectangleF.Inflate(cardDip, BlurMargin / scale, BlurMargin / scale);
         var x = (int)Math.Floor(area.X * scale); var y = (int)Math.Floor(area.Y * scale);
@@ -44,8 +54,8 @@ public sealed class UiBackdrop : IDisposable
         if (w > 4096 || h > 4096) return;
         EnsureBuffers(w, h);
         if (screenDc == 0) screenDc = GetDC(0);
-        // CAPTUREBLT includes layered windows; this app's windows are excluded from capture by their display affinity.
-        if (!BitBlt(memoryDc, 0, 0, w, h, screenDc, origin.X + x, origin.Y + y, 0x00CC0020 | 0x40000000)) return;
+        // Plain SRCCOPY: the CAPTUREBLT flag (layered windows) makes the pointer flicker. This app's windows are excluded from capture by their display affinity.
+        if (!BitBlt(memoryDc, 0, 0, w, h, screenDc, origin.X + x, origin.Y + y, 0x00CC0020)) return;
         if (bitmap == null || bitmap.PixelSize.Width != w || bitmap.PixelSize.Height != h)
         {
             bitmap?.Dispose();
