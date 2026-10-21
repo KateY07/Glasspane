@@ -19,7 +19,7 @@ public abstract class UiGlassPanel
     RectangleF animationFrom, animationTo;
     bool animatingToCollapsed;
     Vector2 dragOrigin, pointerOrigin;
-    bool dragging, dragMoved, pressedOnBackground;
+    bool dragging, dragMoved;
     bool pendingOrbClick;
 
     public bool Collapsed { get; private set; }
@@ -224,7 +224,6 @@ public abstract class UiGlassPanel
         {
             dragging = true; dragMoved = false; pointerOrigin = point;
             dragOrigin = new Vector2(CurrentRect.X, CurrentRect.Y);
-            pressedOnBackground = true;
             pendingOrbClick = Collapsed;
         }
         Invalidate?.Invoke();
@@ -238,7 +237,7 @@ public abstract class UiGlassPanel
         var orbClick = false;
         if (dragging)
         {
-            dragging = false; consumed = true; pressedOnBackground = false;
+            dragging = false; consumed = true;
             if (!dragMoved && pendingOrbClick) orbClick = true;
             pendingOrbClick = false;
         }
